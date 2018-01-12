@@ -7,6 +7,7 @@
  */
 
 // TODO: Dokumentation erstellen
+// TODO: Query-Parameter richtig aufdröseln und an Request anhängen
 
 
 namespace Brotzka\Affiliate\Networks;
@@ -30,7 +31,7 @@ class Zanox extends AffiliateNetwork implements AffiliateInterface{
 	protected $search_options = [
 		"q" 				=> NULL,		// String e.g. "Samsung"|"iPhone"
 		"searchtype"		=> "phrase", 	// String "phrase"|"contextual"
-		"region"			=> NULL,		// String
+		"region"			=> "DE",		// String
 		"minprice"			=> NULL,		// Integer
 		"maxprice"			=> NULL,		// Integer
 		"programs"			=> NULL, 		// Integer|String Example "1234", "1234,5678,9123"
@@ -67,21 +68,17 @@ class Zanox extends AffiliateNetwork implements AffiliateInterface{
 			}
 		}
 
-		$query = "";
+		$query = array();
 		foreach($this->search_options as $key => $value){
 			if($value !== NULL){
-				$query = $query . "&amp;" . $key . "=" . $value;
+				$query[$key] = $value;
 			}
 		}
-
-		//echo "<pre>", print_r($this->search_options), "</pre>";
-
-		//echo $query;
 
 		return $this->callApi('GET', '/products', $query);
 	}
 
-	private function callApi($http_verb, $uri, $query = "", $date = false)
+	private function callApi($http_verb, $uri, $options = array(), $date = false)
 	{
 		// TODO: Datum einbauen (bei Bedarf)
 		// TODO: Getter und Setter erstellen
@@ -91,25 +88,31 @@ class Zanox extends AffiliateNetwork implements AffiliateInterface{
 		$this->timestamp = gmdate('D, d M Y H:i:s T', time());
 		$nonce = uniqid() . uniqid();
 
-		$requestURL = $this->getRequestUrl() . $query;
-		echo "<br>".$requestURL."<br>";
+		//$requestURL = $this->getRequestUrl();
+		$requestURL = $this->base_url . $this->uri;
+		$request_options = $this->getRequestUrlOptions($options);
 
 		try {
 			$client = new Client();
-			$response = $client->request( $this->http_verb, $requestURL);
+
+			$response = $client->request( $this->http_verb, $requestURL, ["query" => $request_options]);
 			return json_decode($response->getBody(), true);
 		} catch(\Exception $ex){
 			return $ex->getMessage();
 		}
 	}
 
-	private function getRequestUrl()
+	private function getRequestUrlOptions($additional_options = array())
 	{
-		//$search = "&q=jacke&partnership=confirmed&hasimages=true&region=DE";
 		$search = "";
 		$string_to_sign = mb_convert_encoding($this->http_verb . $this->uri . $this->timestamp . $this->nonce, 'UTF-8');
 		$signature = base64_encode(hash_hmac('sha1', $string_to_sign, $this->secret, true));
-		return $this->base_url . $this->uri . '?connectid=' . $this->connect_id . '&date=' . urlencode($this->timestamp) . '&nonce=' . $this->nonce . '&signature=' . urlencode($signature) . $search;
+		//return $this->base_url . $this->uri . '?connectid=' . $this->connect_id . '&date=' . urlencode($this->timestamp) . '&nonce=' . $this->nonce . '&signature=' . urlencode($signature);
+		$additional_options['connectid'] = $this->connect_id;
+		$additional_options['date'] = urlencode($this->timestamp);
+		$additional_options['nonce'] = $this->nonce;
+		$additional_options['signature'] = urlencode($signature);
+		return $additional_options;
 	}
 
 	private function setUri($uri)

@@ -6,79 +6,129 @@
  * Time: 05:23
  */
 
+// TODO: Dokumentation erstellen
+
+
 namespace Brotzka\Affiliate\Networks;
+
+use Brotzka\Affiliate\Interfaces\AffiliateInterface;
 
 use Brotzka\Affiliate\AffiliateNetwork;
 use GuzzleHttp\Psr7\Request;
 use GuzzleHttp\Client;
 
-class Zanox extends AffiliateNetwork{
-	protected $key = "214E3A3429CBA6A9F7BD";
+class Zanox extends AffiliateNetwork implements AffiliateInterface{
+	protected $connect_id = "214E3A3429CBA6A9F7BD";
 	protected $secret = "4cc56f85a6d141+ab86b4Cb67802ee/d4d440345";
-	protected $base_url = "http://api.zanox.com/json/2011-03-01/";
+	protected $base_url = "http://api.zanox.com/json/2011-03-01";
+	protected $uri;
+	protected $http_verb;
+	protected $timestamp;
+	protected $date;
+	protected $nonce;
 
-	protected $blubber;
+	protected $search_options = [
+		"q" 				=> NULL,		// String e.g. "Samsung"|"iPhone"
+		"searchtype"		=> "phrase", 	// String "phrase"|"contextual"
+		"region"			=> NULL,		// String
+		"minprice"			=> NULL,		// Integer
+		"maxprice"			=> NULL,		// Integer
+		"programs"			=> NULL, 		// Integer|String Example "1234", "1234,5678,9123"
+		"hasimages"			=> true,		// Boolean
+		"adspace"			=> NULL,		// Integer AdSpace-ID
+		"partnership"		=> "confirmed",	// Enumeration "all"|"confirmed"
+		"ean"				=> NULL,		// Integer
+		"merchantcategory"	=> NULL,		// String e.g. Smartphones
+		"items"				=> NULL,			// Integer
+		"page"				=> NULL			// Integer
+	];
 
-	public function __construct() {
-		$this->blubber = str_random(5);
-	}
-
-	public function buildRequestUrl($http_verb, $uri)
-	{
-
-		$timestamp = gmdate('D, d M Y H:i:s T', time());
-		$date = date('Y-m-d');
-		$nonce = uniqid() . uniqid();
-
-		$string = mb_convert_encoding($http_verb . $uri . $timestamp . $nonce, 'UTF-8');
-		$signature = base64_encode(hash_hmac('sha1', $string, $this->secret, true));
-
-		$url = $this->base_url . $uri;
-
-		$headers = [
-			'Authorization' => 'ZXWS ' . env('ZANOX_CONNECT_ID') . ":" . $signature,
-			'Date'          => $timestamp,
-			'nonce'         => $nonce
-		];
-
-		$client = new Client();
-		try {
-			//$response = $client->request( $http_verb, $url, $headers );
-			$response = $client->request($http_verb, $url, $headers);
-			echo "<pre>", print_r($response->getHeaders()), "</pre>";
-			echo $response->getStatusCode();
-		} catch(\Exception $ex){
-			echo $ex->getMessage();
-		}
-
-
-	}
-
-	public function connect()
-	{
-		$http_verb = 'GET';
-		$date = date('Y-m-d');
-		$uri = '/profiles/' . $date;
-		$time_stamp = gmdate('D, d M Y H:i:s T', time());
-		$nonce = uniqid() . uniqid();
-		$string_to_sign = mb_convert_encoding($http_verb . $uri . $time_stamp . $nonce, 'UTF-8');
-		$signature = base64_encode(hash_hmac('sha1', $string_to_sign, $this->secret, true));
-		$requestURL = 'http://api.zanox.com/json/2011-03-01' . $uri . '?connectid=' . $this->key . '&date=' . urlencode($time_stamp) . '&nonce=' . $nonce . '&signature=' . urlencode($signature);
-
-		$this->showUrl($requestURL);
+	public function __construct($id, $secret) {
+		//$this->id = env('ZANOX_CONNECT_ID');
+		//$this->secret = env('ZANOX_SECRET_KEY');
+		$this->connect_id = $id;
+		$this->secret = $secret;
+		$this->nonce = uniqid() . uniqid();
 	}
 
 	public function getProfile()
 	{
-		$test = "https://api.zanox.com/json/2011-03-01/profiles?connectid=802B8BF4AE99";
-		$uri = "/profiles";
-		$requestURL = 'http://api.zanox.com/json/2011-03-01' . $uri . '?connectid=' . $this->key;
-		$this->showUrl($requestURL);
+		return $this->callApi('GET', '/profiles');
 	}
 
-	private function showUrl($url)
+	public function searchProducts($search, $options = array())
 	{
-		echo "Request: " . $url . "<br>";
-		echo "<a href=\"" . $url . "\">Link</a><br>";
+		$this->search_options["q"] = urlencode($search);
+		if(count($options) > 0){
+			foreach($options as $key => $value){
+				if(array_key_exists($key, $this->search_options)){
+					$this->search_options[$key] = $value;
+				}
+			}
+		}
+
+		$query = "";
+		foreach($this->search_options as $key => $value){
+			if($value !== NULL){
+				$query = $query . "&amp;" . $key . "=" . $value;
+			}
+		}
+
+		//echo "<pre>", print_r($this->search_options), "</pre>";
+
+		//echo $query;
+
+		return $this->callApi('GET', '/products', $query);
+	}
+
+	private function callApi($http_verb, $uri, $query = "", $date = false)
+	{
+		// TODO: Datum einbauen (bei Bedarf)
+		// TODO: Getter und Setter erstellen
+		$this->setHttpVerb($http_verb);
+		$this->setUri($uri);
+		$this->date = date('Y-m-d');
+		$this->timestamp = gmdate('D, d M Y H:i:s T', time());
+		$nonce = uniqid() . uniqid();
+
+		$requestURL = $this->getRequestUrl() . $query;
+		echo "<br>".$requestURL."<br>";
+
+		try {
+			$client = new Client();
+			$response = $client->request( $this->http_verb, $requestURL);
+			return json_decode($response->getBody(), true);
+		} catch(\Exception $ex){
+			return $ex->getMessage();
+		}
+	}
+
+	private function getRequestUrl()
+	{
+		//$search = "&q=jacke&partnership=confirmed&hasimages=true&region=DE";
+		$search = "";
+		$string_to_sign = mb_convert_encoding($this->http_verb . $this->uri . $this->timestamp . $this->nonce, 'UTF-8');
+		$signature = base64_encode(hash_hmac('sha1', $string_to_sign, $this->secret, true));
+		return $this->base_url . $this->uri . '?connectid=' . $this->connect_id . '&date=' . urlencode($this->timestamp) . '&nonce=' . $this->nonce . '&signature=' . urlencode($signature) . $search;
+	}
+
+	private function setUri($uri)
+	{
+		if($uri[0] != "/"){
+			$this->uri = "/" . $uri;
+		}
+		$this->uri = $uri;
+	}
+
+	private function setHttpVerb($http_verb){
+		// TODO: um weitere relevante HTTP-Methoden erweitern
+		switch($http_verb){
+			case 'GET':
+			case 'POST':
+				$this->http_verb = $http_verb;
+				break;
+			default:
+				throw new \Exception("Ungültige HTTP-Methode übergeben!");
+		}
 	}
 }

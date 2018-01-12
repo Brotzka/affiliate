@@ -1,0 +1,23 @@
+{
+  "name": "brotzka/affiliate",
+  "description": "A library to connect to affiliate networks and collect product data.",
+  "keywords": ["affiliate", "affilinet", "zanox","belboon", "amazon", "webgains"],
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Fabian Hagen",
+      "email": "fabianhagen87@gmail.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "require": {
+    "php": ">=7.1.0",
+    "guzzlehttp/guzzle": "~6.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Brotzka\\Affiliate\\": "src/"
+    }
+  }
+}

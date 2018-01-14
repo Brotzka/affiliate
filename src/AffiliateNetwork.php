@@ -13,7 +13,7 @@ class AffiliateNetwork {
 	protected $key;
 	protected $secret;
 
-	public function __construct($key, $secret) {
+	public function __construct($key = false, $secret = false) {
 		$this->key = $key;
 		$this->secret = $secret;
 	}

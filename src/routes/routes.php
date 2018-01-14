@@ -6,12 +6,15 @@
  * Time: 05:29
  */
 
-
-
 Route::group(['prefix' => 'affiliate', 'middleware' => ['web']], function(){
 	Route::get('zanox', function(){
-		$zanox = new Brotzka\Affiliate\Networks\Zanox();
-		//$zanox->connect();
-		$zanox->buildRequestUrl('GET','profiles');
+		$profile = new \Brotzka\Affiliate\networks\Zanox\ZanoxProfile();
+
+		echo "<pre>", print_r($profile->getProfile()), "</pre>";
+	});
+
+	Route::get('amazon', function(){
+		$amazon = new \Brotzka\Affiliate\Networks\Amazon();
+		$amazon->getProfile();
 	});
 });

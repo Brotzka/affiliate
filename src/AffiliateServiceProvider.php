@@ -13,12 +13,15 @@ class AffiliateServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        define('PACKAGEPATH', __DIR__);
+        
 	    $this->publishes([
 		    __DIR__.'/config/settings.php' => config_path('affiliate.php'),
 	    ]);
 
 	    $this->loadRoutesFrom(__DIR__.'/routes/routes.php');
-	    $this->loadMigrationsFrom(__DIR__.'/migrations');
+        $this->loadMigrationsFrom(__DIR__.'/migrations');
+        $this->loadViewsFrom(__DIR__ . '/views', 'affiliate');
     }
 
     /**

@@ -6,11 +6,30 @@
  * Time: 05:29
  */
 
-Route::group(['prefix' => 'affiliate', 'middleware' => ['web']], function(){
-	Route::get('zanox', function(){
-		$profile = new \Brotzka\Affiliate\networks\Zanox\ZanoxProfile();
+use Brotzka\Affiliate\Networks\Zanox\ZanoxProfile;
+use Brotzka\Affiliate\Networks\Zanox\ZanoxAdMedia;
 
-		echo "<pre>", print_r($profile->getProfile()), "</pre>";
+
+Route::group([
+	'prefix' => 'affiliate', 
+	'middleware' => ['web'],
+	'namespace' => '\Brotzka\Affiliate\Http\Controllers'
+], function(){
+
+	Route::group(['prefix' => 'admin', 'middleware' => ['auth']], function(){
+		Route::get('/', 'AffiliateAdminController@dashboard');
+
+	});
+
+	Route::get('zanox', function(){
+		$profile = new ZanoxProfile();
+		//dd($profile->getProfile());
+		//echo "<pre>", print_r($profile->getProfile()), "</pre>";
+
+		$media = new ZanoxAdMedia();
+
+		return view('affiliate::test');
+		//dd($media->getAdMedia());
 	});
 
 	Route::get('amazon', function(){

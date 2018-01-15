@@ -6,7 +6,7 @@
  * Time: 05:24
  */
 
-namespace Brotzka\Affiliate\networks\zanox;
+namespace Brotzka\Affiliate\Networks\Zanox;
 
 
 class ZanoxProduct {

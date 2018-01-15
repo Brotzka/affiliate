@@ -15,9 +15,20 @@
     "php": ">=7.1.0",
     "guzzlehttp/guzzle": "~6.0"
   },
+  "require-dev": {
+    "phpunit/phpunit": "~6.0"
+  },
   "autoload": {
     "psr-4": {
       "Brotzka\\Affiliate\\": "src/"
     }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Brotzka\\Affiliate\\Test\\": "tests"
+    }
+  },
+  "scripts": {
+      "test": "phpunit"
   }
 }

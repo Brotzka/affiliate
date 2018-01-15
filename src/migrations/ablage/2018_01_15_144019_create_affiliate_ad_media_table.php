@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateAffiliateProfilesTable extends Migration
+class CreateAffiliateAdMediaTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,8 @@ class CreateAffiliateProfilesTable extends Migration
      */
     public function up()
     {
-        Schema::create('affiliate_profiles', function (Blueprint $table) {
+        Schema::create('affiliate_ad_media', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name');
-            $table->string('description')->nullable();
-            $table->text('connection_infos')->nullable();
             $table->timestamps();
         });
     }
@@ -29,6 +26,6 @@ class CreateAffiliateProfilesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('affiliate_profiles');
+        Schema::dropIfExists('affiliate_ad_media');
     }
 }

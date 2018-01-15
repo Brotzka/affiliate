@@ -9,7 +9,9 @@
 namespace Brotzka\Affiliate\Networks\Zanox;
 
 
-class ZanoxSearch {
+use Brotzka\Affiliate\Interfaces\AffiliateProductSearchInterface;
+
+class ZanoxSearch implements AffiliateProductSearchInterface {
 
 	protected $search_options = [
 		"q" 				=> NULL,		// String e.g. "Samsung"|"iPhone"
@@ -27,7 +29,8 @@ class ZanoxSearch {
 		"page"				=> NULL			// Integer
 	];
 
-	public function searchProducts($search, $options = array())
+
+	public function searchProducts($search, array $options)
 	{
 		$this->search_options["q"] = urlencode($search);
 		if(count($options) > 0){

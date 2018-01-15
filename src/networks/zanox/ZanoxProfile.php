@@ -8,13 +8,13 @@
 
 namespace Brotzka\Affiliate\networks\Zanox;
 
+use Brotzka\Affiliate\Interfaces\AffiliateProfileInterface;
 use Brotzka\Affiliate\Models\AffiliateProfile;
-use Brotzka\Affiliate\Networks\Zanox\ZanoxConnector;
 
 
-class ZanoxProfile extends AffiliateProfile{
+class ZanoxProfile extends AffiliateProfile implements AffiliateProfileInterface {
 
-	public function getProfile()
+	public function getProfile() : AffiliateProfile
 	{
 		$uri = '/profiles';
 		$http_verb = 'GET';
@@ -28,5 +28,9 @@ class ZanoxProfile extends AffiliateProfile{
 		} catch(\Exception $ex){
 			dd($ex);
 		}
+	}
+
+	public function updateProfile(): AffiliateProfile {
+		// TODO: Implement updateProfile() method.
 	}
 }
